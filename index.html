@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 東京新潟 · 終極全攻略</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4A5D23; /* 戶外大地綠 */
+            --secondary: #D97706; /* 溫暖木質橘 */
+            --info: #3b82f6; /* 科技藍 */
+            --bg: #FDFBF7;
+            --card-bg: #ffffff;
+            --stone-100: #f5f5f4;
+            --stone-800: #292524;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, "Noto Sans TC", "微軟正黑體", sans-serif; margin: 0; background: var(--bg); color: #333; padding-bottom: 120px; line-height: 1.5; }
+        
+        header { background: var(--primary); color: white; padding: 45px 24px 25px; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .trip-tag { font-size: 10px; font-weight: bold; letter-spacing: 2px; opacity: 0.8; margin-bottom: 5px; }
+        h1 { font-size: 26px; margin: 5px 0; font-weight: 900; }
+        .hotel-badge { background: rgba(255,255,255,0.15); padding: 10px 14px; border-radius: 12px; font-size: 12px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.2); display: block; }
+
+        nav { position: sticky; top: 0; z-index: 100; background: rgba(253, 251, 247, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #e5e7eb; padding: 12px 0; }
+        .nav-scroll { display: flex; overflow-x: auto; gap: 10px; padding: 0 16px; scrollbar-width: none; }
+        .nav-scroll::-webkit-scrollbar { display: none; }
+        .day-btn { flex-shrink: 0; width: 56px; height: 56px; border-radius: 14px; border: 1px solid #ddd; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .day-btn.active { background: var(--primary); color: white; border: none; box-shadow: 0 4px 12px rgba(74, 93, 35, 0.3); }
+        .day-btn span:first-child { font-size: 9px; font-weight: bold; }
+        .day-btn span:last-child { font-size: 18px; font-weight: 900; }
+
+        .container { max-width: 600px; margin: 24px auto; padding: 0 16px; }
+        .analysis-card { background: white; padding: 20px; border-radius: 28px; border: 1px solid #eee; display: grid; grid-template-columns: 100px 1fr; gap: 16px; align-items: center; margin-bottom: 30px; }
+        .chart-container { width: 100px; height: 100px; position: relative; }
+        .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+
+        .timeline { position: relative; padding-left: 10px; }
+        .timeline-line { position: absolute; left: 20px; top: 0; bottom: 0; width: 2px; background: var(--stone-100); }
+        .item { position: relative; padding-left: 45px; margin-bottom: 40px; }
+        .item-dot { position: absolute; left: 10px; top: 0; width: 22px; height: 22px; background: white; border: 2px solid var(--primary); border-radius: 50%; z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+
+        .time-badge { font-family: monospace; font-size: 12px; font-weight: 700; color: #888; background: #eee; padding: 2px 6px; border-radius: 4px; }
+        .item-title { font-size: 18px; font-weight: 800; margin: 6px 0 4px; color: var(--stone-800); }
+        .item-note { font-size: 14px; color: #555; margin-bottom: 10px; }
+
+        .info-box { background: #f9fafb; border-radius: 12px; padding: 12px; margin-bottom: 8px; border: 1px solid #f0f0f0; border-left: 4px solid #ddd; }
+        .info-title { font-size: 11px; font-weight: bold; color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+        .transport-box { border-left-color: var(--primary); background: #f0f4e8; }
+        .dining-box { border-left-color: var(--secondary); background: #fff7ed; }
+        .shopping-box { border-left-color: #3b82f6; background: #f0f4f8; }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 12px; }
+        .btn { flex: 1; padding: 10px; border-radius: 10px; text-decoration: none; font-size: 12px; font-weight: bold; text-align: center; transition: 0.2s; }
+        .btn-nav { background: var(--primary); color: white; }
+        .btn-map { background: white; color: var(--primary); border: 1px solid var(--primary); }
+
+        .footer-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); color: white; padding: 16px 24px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="trip-tag">PREMIUM TRAVEL DASHBOARD 2026</div>
+        <h1>TOKYO & NIIGATA<br>終極全攻略</h1>
+        <div id="hotel-info" class="hotel-badge">載入中...</div>
+    </header>
+
+    <nav><div class="nav-scroll" id="day-nav"></div></nav>
+
+    <main class="container">
+        <div class="analysis-card" id="day-summary"></div>
+        <div class="timeline">
+            <div class="timeline-line"></div>
+            <div id="timeline-list"></div>
+        </div>
+    </main>
+
+    <div class="footer-nav">
+        <div>
+            <div style="font-size: 10px; color: #aaa; font-weight: bold;">VIEWING STATUS</div>
+            <div id="footer-status" style="font-weight: 800; font-size: 14px;"></div>
+        </div>
+        <button onclick="window.scrollTo({top:0, behavior:'smooth'})" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">▲</button>
+    </div>
+
+    <script>
+        const itineraryData = [
+          {
+            day: 1, date: "01/17 (Sat)", title: "抵達東京：上野補給",
+            hotel: "Tosei Hotel Cocone Ueno Okachimachi",
+            summary: "從淡水出發前往成田，入住上野並補齊 Outdoor 戰備。",
+            stats: { travel: 40, shopping: 40, food: 20, sightseeing: 0 },
+            items: [
+              { time: "03:50-05:15", title: "淡水 → 桃園機場 (T2)", type: "transport", note: "學勤路接人，辦理長榮 BR184 登機。", transport: "預約機場接送 (約 NT$1,200 - 1,500)。", map: "桃園機場第二航廈" },
+              { time: "12:30-14:30", title: "成田機場 → 京成上野", type: "transport", note: "搭乘 Skyliner 特急快速進城。", transport: "<b>月台：</b>京成線 1 號月台。<br><b>車資：</b>2,570 JPY。", map: "京成上野駅" },
+              { time: "15:00", title: "飯店 Check-in", type: "transport", note: "入住 Tosei Hotel Cocone。", transport: "御徒町站步行 2 分鐘或上野站步行 8 分鐘。", map: "Tosei Hotel Cocone Ueno okachimachi" },
+              { time: "16:00-19:00", title: "上野御徒町購物", type: "shopping", note: "東京戶外裝備聖地，買齊保暖層。", shopping: "<b>核心品牌：</b>BEAMS, mont-bell 旗艦店, BEAVER。", map: "mont-bell Ueno" }
+            ]
+          },
+          {
+            day: 2, date: "01/18 (Sun)", title: "海之都：葉山與鎌倉夕陽",
+            hotel: "Tosei Hotel Cocone Ueno Okachimachi",
+            summary: "避開鎌倉核心人潮，享受葉山寧靜海岸與七里濱夕陽。",
+            stats: { travel: 35, shopping: 0, food: 25, sightseeing: 40 },
+            items: [
+              { time: "09:45-11:15", title: "上野 → 逗子 → 真名瀨", type: "transport", note: "前往葉山必拍公車站與鳥居。", transport: "<b>路線：</b>上野東京線至『逗子站』，東口 3 號月台搭巴士『逗11/12』至『真名瀨』下車。", map: "真名瀬（バス）" },
+              { time: "11:30-13:30", title: "森戶大明神 & 葉山午餐", type: "sightseeing", note: "拍海上鳥居與富士山。", dining: "<b>推薦：</b>La Marée (法式海景) 或鎌倉小町通吻仔魚壽司。", map: "森戸大明神" },
+              { time: "15:00-17:15", title: "七里濱 & 稻村崎夕陽", type: "sightseeing", note: "湘南海岸看富士山落日首選。", transport: "搭乘『江之電』至七里濱站，步行即可抵達海灘。", map: "稲村ヶ崎公園" },
+              { time: "17:30-19:00", title: "返回上野 (Green Car)", type: "transport", note: "避開通勤人潮，享受旋轉沙發休息。", transport: "建議月台購買 Green Ticket (綠色車廂)。", map: "上野駅" }
+            ]
+          },
+          {
+            day: 3, date: "01/19 (Mon)", title: "雪國：GALA滑雪與溫泉",
+            hotel: "越後のお宿 いなもと (預計 15:00 入住)",
+            summary: "新幹線直達雪場，體驗雪上電單車與南魚沼米。",
+            stats: { travel: 25, shopping: 0, food: 25, sightseeing: 50 },
+            items: [
+              { time: "06:50-08:00", title: "上野 → GALA 湯澤", type: "transport", note: "新幹線『たにがわ 73 號』直達。", transport: "<b>月台：</b>上野站新幹線地下月台。建議使用 JR Pass。", map: "GALA湯沢" },
+              { time: "09:50-10:40", title: "GALA Moon Bike 體驗", type: "activity", note: "雪場內最新型電單車體驗。", map: "GALA Yuzawa Snow Resort" },
+              { time: "11:30-13:00", title: "午餐：雪場餐廳「六花」", type: "food", note: "享受南魚沼產越光米料理。", dining: "<b>必點：</b>新潟名產越光米定食。", map: null },
+              { time: "18:30-20:00", title: "晚餐：中野屋蕎麥麵", type: "food", note: "湯澤站前必吃名店，推薦舞茸天婦羅。", map: "中野屋 湯沢本店" }
+            ]
+          },
+          {
+            day: 4, date: "01/20 (Tue)", title: "新潟：海鮮與展望全景",
+            hotel: "越後のお宿 いなもと",
+            summary: "新潟市場美食與日本海全景展望。",
+            stats: { travel: 30, shopping: 20, food: 30, sightseeing: 20 },
+            items: [
+              { time: "11:30-13:30", title: "Pia Bandai 港食堂", type: "food", note: "新潟最強市場美食。", dining: "<b>必吃：</b>爆量鮭魚卵丼飯 (產地直送)。", map: "Pia Bandai" },
+              { time: "14:00-15:00", title: "Befco 展望室", type: "sightseeing", note: "31樓俯瞰日本海與信濃川。", map: "Befco Toki Messe Observatory" },
+              { time: "15:30-17:00", title: "白山神社 & 古町老街", type: "sightseeing", note: "祈求平安與選購清酒伴手禮。", shopping: "<b>必買：</b>清酒漬鮭魚卵、當地地酒。", map: "新潟白山神社" }
+            ]
+          },
+          {
+            day: 5, date: "01/21 (Wed)", title: "文青東京：選物店與燈海",
+            hotel: "Tosei Hotel Cocone Ueno Okachimachi",
+            summary: "回東京 Check-in 後前往代官山選物店巡禮。",
+            stats: { travel: 25, shopping: 50, food: 15, sightseeing: 10 },
+            items: [
+              { time: "13:00-16:30", title: "代官山/中目黑購物", type: "shopping", note: "日系質感與戶外風格核心。", shopping: "<b>推薦：</b>nanamica 旗艦店, 1LDK, White Mountaineering。", map: "nanamica Daikanyama" },
+              { time: "17:30-19:30", title: "六本木燈海時間", type: "sightseeing", note: "享受藍白燈海與隱藏景點。", transport: "<b>私房推：</b>若櫸坂人多，可去 Midtown 旁的『檜町公園』，燈光優雅人潮少。", dining: "<b>晚餐：</b>AFURI 柚子拉麵。", map: "六本木けやき坂" }
+            ]
+          },
+          {
+            day: 6, date: "01/22 (Thu)", title: "川越：小江戶漢堡與老街",
+            hotel: "Tosei Hotel Cocone Ueno Okachimachi",
+            summary: "神社釣鯛魚、必吃炭火現烤漢堡。",
+            stats: { travel: 30, shopping: 15, food: 25, sightseeing: 30 },
+            items: [
+              { time: "11:15", title: "川越站 → 冰川神社", type: "transport", note: "搭乘復古巡迴巴士。", transport: "<b>票券：</b>西口 2 號月台買小江戶一日票 (500 JPY)。", map: "川越氷川神社" },
+              { time: "11:30-13:00", title: "午餐：Honohono 漢堡", type: "food", note: "神社旁炭火現烤，必吃推薦。", map: "Kawagoe Burger Honohono" },
+              { time: "14:00-16:00", title: "藏造老街深度探索", type: "sightseeing", note: "推薦『菓子屋橫丁』與『喜多院』。", shopping: "<b>伴手禮：</b>地瓜棒、地瓜甜點。", map: "菓子屋横丁" }
+            ]
+          },
+          {
+            day: 7, date: "01/23 (Fri)", title: "橫濱：購物與巨大鋼彈",
+            hotel: "Tosei Hotel Cocone Ueno Okachimachi",
+            summary: "橫濱港灣漫遊，集購物、美食與科技於一身。",
+            stats: { travel: 20, shopping: 45, food: 20, sightseeing: 15 },
+            items: [
+              { time: "11:00-13:30", title: "World Porters 購物", type: "shopping", note: "戶外用品補貨與美食街。", map: "Yokohama World Porters" },
+              { time: "14:00-15:30", title: "合味道紀念館", type: "activity", note: "製作個人杯麵，需提早預約。", map: "Cup Noodle Museum" },
+              { time: "16:00-17:30", title: "鋼彈工廠表演", type: "sightseeing", note: "觀賞 1:1 移動鋼彈表演。", map: "GUNDAM FACTORY YOKOHAMA" },
+              { time: "17:30-18:30", title: "橫濱中華街點心", type: "food", note: "散步美食：熊貓包子、大馬蹄筍包。", map: "橫濱中華街" }
+            ]
+          },
+          {
+            day: 8, date: "01/24 (Sat)", title: "終章：明治神宮散策與歸途",
+            hotel: "Check-out 11:00 前",
+            summary: "最後衝刺原宿戶外品牌，搭 Skyliner 前往機場。",
+            stats: { travel: 40, shopping: 30, food: 15, sightseeing: 15 },
+            items: [
+              { time: "09:30-11:30", title: "明治神宮清晨散策", type: "sightseeing", note: "穿過巨大的鳥居，享受城市森林。", dining: "<b>推薦：</b>原宿『AFURI』拉麵或『まい泉』豬排。", map: "明治神宮" },
+              { time: "13:00-16:00", title: "原宿/表參道最後補貨", type: "shopping", note: "最後衝刺。", shopping: "<b>核心品牌：</b>BEAMS Harajuku, Porter Stand, TNF Standard。", map: "原宿 BEAMS" },
+              { time: "17:20", title: "京成上野 → 成田機場", type: "transport", note: "搭乘 Skyliner 前往 T1 回國。", transport: "<b>購票：</b>上野站售票機，19:00 前需抵達櫃檯。", map: "成田国際空港" }
+            ]
+          }
+        ];
+
+        let activeDay = 0;
+        let chartInstance = null;
+
+        function getIcon(type) {
+            const icons = { transport: '🚆', shopping: '🛍️', food: '🍱', sightseeing: '📸', activity: '❄️' };
+            return icons[type] || '📍';
+        }
+
+        function renderDay() {
+            const data = itineraryData[activeDay];
+            document.getElementById('hotel-info').innerHTML = `🏠 住宿資訊：${data.hotel}`;
+            document.getElementById('footer-status').innerText = `Day ${data.day} · ${data.date}`;
+
+            const nav = document.getElementById('day-nav');
+            nav.innerHTML = itineraryData.map((d, i) => `
+                <div class="day-btn ${i === activeDay ? 'active' : ''}" onclick="switchDay(${i})">
+                    <span>JAN</span><span>${d.date.split('/')[1].split(' ')[0]}</span>
+                </div>
+            `).join('');
+
+            const summary = document.getElementById('day-summary');
+            summary.innerHTML = `
+                <div class="chart-container"><canvas id="dayChart"></canvas><div class="chart-center">
+                <span style="font-size:9px; font-weight:bold; color:#888;">DAY</span>
+                <span style="font-size:22px; font-weight:900; color:var(--primary);">${data.day}</span></div></div>
+                <div><h3 style="margin:0; font-size:16px;">${data.title}</h3><p style="font-size:11px; color:#666; margin:4px 0;">${data.summary}</p></div>
+            `;
+
+            const list = document.getElementById('timeline-list');
+            list.innerHTML = data.items.map(item => `
+                <div class="item">
+                    <div class="item-dot">${getIcon(item.type)}</div>
+                    <div class="time-badge">${item.time}</div>
+                    <div class="item-title">${item.title}</div>
+                    <div class="item-note">${item.note}</div>
+                    ${item.transport ? `<div class="info-box transport-box"><div class="info-title">🚇 交通指南</div><div class="info-content">${item.transport}</div></div>` : ''}
+                    ${item.dining ? `<div class="info-box dining-box"><div class="info-title">🍱 美食與用餐</div><div class="info-content">${item.dining}</div></div>` : ''}
+                    ${item.shopping ? `<div class="info-box shopping-box"><div class="info-title">🏷️ 推薦品牌/必買</div><div class="info-content">${item.shopping}</div></div>` : ''}
+                    ${item.map ? `<div class="btn-group">
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.map)}" class="btn btn-nav" target="_blank">Google 導航</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.map)}" class="btn btn-map" target="_blank">查看地圖</a>
+                    </div>` : ''}
+                </div>
+            `).join('');
+
+            updateChart(data.stats);
+        }
+
+        function updateChart(stats) {
+            if (chartInstance) chartInstance.destroy();
+            const ctx = document.getElementById('dayChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { datasets: [{ data: [stats.travel, stats.shopping, stats.food, stats.sightseeing], backgroundColor: ['#A8A29E', '#3b82f6', '#F59E0B', '#4A5D23'], borderWidth: 0 }] },
+                options: { cutout: '75%', plugins: { tooltip: { enabled: false }, legend: { display: false } } }
+            });
+        }
+
+        function switchDay(i) {
+            activeDay = i;
+            renderDay();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        window.onload = renderDay;
+    </script>
+</body>
+</html>
